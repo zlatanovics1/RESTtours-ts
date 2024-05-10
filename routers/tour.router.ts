@@ -9,4 +9,7 @@ tourRouter
 
 tourRouter.get('/:id', tourController.getTour);
 
+tourRouter.get('/tours-stats', tourController.getToursStats);
+tourRouter.get('/monthly-plan/:year', tourController.getMonthlyPlan);
+
 export default tourRouter;

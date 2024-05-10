@@ -102,7 +102,13 @@ TourSchema.pre('save', function (this: ITour, next) {
 });
 
 TourSchema.pre(/^find/, function (this: Query<ITour | ITour[], ITour>, next) {
-  this.find({ secretTour: { $ne: true } });
+  this.find({ secretTour: { $ne: true } }).select('-__v');
+  next();
+});
+
+TourSchema.pre('aggregate', function (this, next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  next();
 });
 
 const TourModel = mongoose.model('Tour', TourSchema);

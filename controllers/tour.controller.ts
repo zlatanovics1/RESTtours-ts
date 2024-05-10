@@ -3,12 +3,20 @@ import TourModel from '../models/tour.model';
 import { catchAsyncError } from '../utils/catchAsyncError';
 import { AppError } from '../utils/AppError';
 import { parseInput } from '../utils/helpers';
-
+import { APIFeatures } from '../utils/APIFeatures';
+import { ITour } from '../types/models.types';
+import { ParsedUrlQuery } from 'querystring';
 //
 // GET REQUESTS
 //
 export const getAllTours = catchAsyncError(async (req, res) => {
-  const tours = await TourModel.find().select('-__v');
+  const toursAPIFeatures = new APIFeatures<ITour>(
+    TourModel.find(),
+    req.query as ParsedUrlQuery,
+  );
+  toursAPIFeatures.filter().sort().paginate().limitFields();
+
+  const tours = await toursAPIFeatures.modelQuery;
 
   res.status(200).json({
     status: 'success',
@@ -18,7 +26,7 @@ export const getAllTours = catchAsyncError(async (req, res) => {
 });
 
 export const getTour = catchAsyncError(async (req, res, next) => {
-  const tour = await TourModel.findById(req.params.id).select('-__v');
+  const tour = await TourModel.findById(req.params.id);
 
   if (!tour) return next(new AppError('Tour not found', 404));
 
@@ -28,7 +36,72 @@ export const getTour = catchAsyncError(async (req, res, next) => {
   });
 });
 
-export const getMonthlyPlan = catchAsyncError(async (req, res, next) => {});
+export const getToursStats = catchAsyncError(async (req, res, next) => {
+  const tourStats = await TourModel.aggregate([
+    { $match: { ratingsAverage: { $gte: 4.5 } } },
+    {
+      $group: {
+        // _id: null,
+        _id: '$difficulty',
+        numTours: { $sum: 1 },
+        numRatings: { $sum: '$ratingsQuantity' },
+        averageRating: { $avg: '$ratingsAverage' },
+        averagePrice: { $avg: '$price' },
+        minPrice: { $min: '$price' },
+        maxPrice: { $max: '$price' },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: tourStats,
+  });
+});
+
+export const getMonthlyPlan = catchAsyncError(async (req, res, next) => {
+  const year = req.params.year;
+  const monthlyPlan = await TourModel.aggregate([
+    {
+      $unwind: '$startDates',
+    },
+    {
+      $match: {
+        startDates: {
+          $gte: new Date(`${year}-01-01`),
+          $lte: new Date(`${year}-12-31`),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { $month: '$startDates' },
+        numTours: { $sum: 1 },
+        tours: {
+          $push: { name: '$name', duration: '$duration' },
+        },
+      },
+    },
+    {
+      $addFields: {
+        month: '$_id',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+      },
+    },
+    {
+      $sort: { month: 1 },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: monthlyPlan,
+  });
+});
 
 //
 // POST (PATCH) REQUESTS
