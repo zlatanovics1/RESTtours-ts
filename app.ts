@@ -32,7 +32,7 @@ app.use(xss.xss());
 // parameter pollution
 app.use(hpp());
 
-// noSQL injection
+// noSQL injections
 app.use(sanitize());
 
 // limiting api requests
