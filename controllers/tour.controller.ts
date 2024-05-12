@@ -1,11 +1,12 @@
-import { ControllerHandler } from '../types/controllers.types';
+// import { ControllerHandler } from '../types/controllers.types';
 import TourModel from '../models/tour.model';
-import { catchAsyncError } from '../utils/catchAsyncError';
-import { AppError } from '../utils/AppError';
-import { parseInput } from '../utils/helpers';
-import { APIFeatures } from '../utils/APIFeatures';
 import { ITour } from '../types/models.types';
 import { ParsedUrlQuery } from 'querystring';
+
+import { catchAsyncError } from '../utils/catchAsyncError';
+import { AppError } from '../utils/AppError';
+import { parseData } from '../utils/helpers';
+import { APIFeatures } from '../utils/APIFeatures';
 //
 // GET REQUESTS
 //
@@ -107,17 +108,21 @@ export const getMonthlyPlan = catchAsyncError(async (req, res, next) => {
 // POST (PATCH) REQUESTS
 //
 export const postTour = catchAsyncError(async (req, res, next) => {
-  const data = parseInput(
+  const data = parseData(
     req.body,
     'name duration maxGroupSize difficulty ratingsAverage ratingsQuantity price priceDiscount summary description imageCover images startDates',
   );
 
   const newTour = await TourModel.create(data);
 
-  const newTourSerialized = newTour.toObject();
+  const newTourSafeToSend = newTour.toObject();
 
   res.status(201).json({
     status: 'success',
-    data: newTourSerialized,
+    data: newTourSafeToSend,
   });
 });
+
+// #TODO updateTour
+
+// #TODO deleteTour

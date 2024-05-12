@@ -1,13 +1,47 @@
 import express from 'express';
-import tourRouter from './routers/tour.router';
 import globalErrorHandler from './controllers/error.controller';
+import tourRouter from './routers/tour.router';
+import userRouter from './routers/user.router';
 import { AppError } from './utils/AppError';
+
+// security
+import xss = require('express-xss-sanitizer');
+import hpp = require('hpp');
+import sanitize = require('express-mongo-sanitize');
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
+const limiter = rateLimit({
+  limit: 100,
+  windowMs: 60 * 60 * 1000, // one hour,
+  message: 'Too many requests from one IP address. Try again later.',
+});
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+
+// security middlewares
+//
+// http security
+app.use(helmet());
+
+// cross side scripting
+app.use(xss.xss());
+
+// parameter pollution
+app.use(hpp());
+
+// noSQL injection
+app.use(sanitize());
+
+// limiting api requests
+app.use('/api', limiter);
+//
+////
 
 app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
 // unknown route
 app.use('*', (req, res, next) => {

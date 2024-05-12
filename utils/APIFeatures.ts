@@ -13,11 +13,15 @@ export class APIFeatures<T> {
 
   filter() {
     const excludedFields = ['sort', 'fields', 'page', 'limit'];
-    excludedFields.forEach((field) => delete this.reqQuery?.[field]);
+    const filterObj = { ...this.reqQuery };
+    excludedFields.forEach((field) => delete filterObj?.[field]);
 
     // append $ to gt lt gte lte
-    const queryString = JSON.stringify(this.reqQuery);
-    queryString.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
+    let queryString = JSON.stringify(filterObj);
+    queryString = queryString.replace(
+      /\b(gt|gte|lt|lte)\b/g,
+      (match) => `$${match}`,
+    );
 
     this.modelQuery = this.modelQuery.find(JSON.parse(queryString));
 
