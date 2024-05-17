@@ -2,11 +2,11 @@ import bcrypt = require('bcryptjs');
 import jwt = require('jsonwebtoken');
 import crypto = require('crypto');
 
-export function parseData(obj: any, fields: string, deleteFields?: boolean) {
+export function parseData(obj: any, fields: string) {
   const fieldsArray = fields.split(' ');
   let outputObj: any = {};
   Object.keys(obj).forEach((key: string) => {
-    if (deleteFields !== fieldsArray.includes(key))
+    if (fieldsArray.includes(key))
       outputObj[key as keyof typeof outputObj] = obj[key as keyof typeof obj];
   });
   return outputObj;
@@ -32,7 +32,10 @@ const verifyTokenPromise = (token: string, secret: string) =>
   });
 
 export async function verifyToken(token: string) {
-  return (await verifyTokenPromise(token, process.env.JWT_SECRET!)) as any;
+  return (await verifyTokenPromise(
+    token,
+    process.env.JWT_SECRET!,
+  )) as Promise<any>;
 }
 
 export const hashToken = (token: string) =>

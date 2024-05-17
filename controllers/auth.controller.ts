@@ -17,7 +17,7 @@ declare global {
 }
 
 function createSendJWT(user: IUserSafe, res: Response) {
-  const token = jwt.sign(user.id, process.env.JWT_SECRET!, {
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRES_IN!,
   });
 
@@ -33,6 +33,7 @@ function createSendJWT(user: IUserSafe, res: Response) {
   res.status(200).json({
     status: 'success',
     user,
+    token,
   });
 }
 
@@ -40,11 +41,9 @@ export const signup = catchAsyncError(async (req, res, next) => {
   const data = parseData(req.body, 'name email password passwordConfirm');
   // create user
   const newUser = await UserModel.create(data);
-  const newUserSafe = parseData(
-    newUser,
-    'password passwordConfirm passwordChangedAt',
-    true,
-  );
+
+  //@ts-ignore
+  const newUserSafe = parseData(newUser._doc, 'name email role _id');
 
   // create and send jwt
   createSendJWT(newUserSafe, res);
@@ -57,7 +56,8 @@ export const login = catchAsyncError(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password)))
     return next(new AppError('Invalid email or password', 400));
 
-  const userSafe = parseData(user, 'password', true);
+  //@ts-ignore
+  const userSafe = parseData(user._doc, 'name email role _id');
 
   createSendJWT(userSafe, res);
 });
@@ -120,8 +120,8 @@ export const resetPassword = catchAsyncError(async (req, res, next) => {
   user.password = password;
   user.passwordConfirm = passwordConfirm;
   user.save();
-
-  const userSafe = parseData(user, 'password passwordConfirm', true);
+  //@ts-ignore
+  const userSafe = parseData(user._doc, 'name email role _id');
   createSendJWT(userSafe, res);
 });
 
@@ -140,7 +140,8 @@ export const updatePassword = catchAsyncError(async (req, res, next) => {
   user.passwordConfirm = newPasswordConfirm;
   user.save();
 
-  const userSafe = parseData(user, 'password passwordConfirm', true);
+  //@ts-ignore
+  const userSafe = parseData(user._doc, 'name email role _id');
   createSendJWT(userSafe, res);
 });
 
@@ -154,11 +155,9 @@ export const protectRoute = catchAsyncError(async (req, res, next) => {
   )
     return next(new AppError('Please log in to get access', 401));
 
-  const token = req.headers.authorization.split(' ')[1];
+  const token = req.headers.authorization.split('Bearer ')[1];
 
-  const { iat, exp, id } = await verifyToken(token);
-
-  if (exp < Date.now()) return next(new AppError('Token expired', 401));
+  const { iat, id } = await verifyToken(token);
 
   const user = await UserModel.findById(id);
 
