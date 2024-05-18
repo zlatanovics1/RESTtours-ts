@@ -5,8 +5,9 @@ import * as authController from './../controllers/auth.controller';
 const tourRouter = express.Router();
 
 tourRouter
-  .get('/', authController.protectRoute, tourController.getAllTours)
-  .post('/', authController.protectRoute, tourController.postTour);
+  .route('/')
+  .get(authController.protectRoute, tourController.getAllTours)
+  .post(authController.protectRoute, tourController.postTour);
 
 tourRouter.get('/:id', tourController.getTour);
 

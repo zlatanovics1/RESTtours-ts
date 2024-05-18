@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 
 export interface ITour extends Document {
   name: string;
@@ -42,3 +42,11 @@ export interface IUser extends IUserSafe, IUserMethods {
 }
 
 export type UserModel = Model<IUser, {}, IUserMethods>;
+
+export interface IReview {
+  review: string;
+  rating: number;
+  createdAt: Date;
+  user: typeof mongoose.Schema.ObjectId;
+  tour: typeof mongoose.Schema.ObjectId;
+}

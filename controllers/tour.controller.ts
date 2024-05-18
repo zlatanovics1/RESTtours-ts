@@ -27,7 +27,7 @@ export const getAllTours = catchAsyncError(async (req, res) => {
 });
 
 export const getTour = catchAsyncError(async (req, res, next) => {
-  const tour = await TourModel.findById(req.params.id);
+  const tour = await TourModel.findById(req.params.id).populate('reviews');
 
   if (!tour) return next(new AppError('Tour not found', 404));
 
