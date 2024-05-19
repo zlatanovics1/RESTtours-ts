@@ -119,13 +119,6 @@ const TourSchema = new mongoose.Schema(
     },
     toObject: {
       virtuals: true,
-      transform: (doc, ret) => {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.secretTour;
-        delete ret.__v;
-        return ret;
-      },
     },
   },
 );
@@ -135,7 +128,7 @@ TourSchema.virtual('durationWeeks').get(function () {
 });
 //virtual populating
 TourSchema.virtual('reviews', {
-  ref: 'reviews',
+  ref: 'Review',
   localField: '_id',
   foreignField: 'tour',
 });

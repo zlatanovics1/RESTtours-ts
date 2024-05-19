@@ -1,41 +1,15 @@
 // import { ControllerHandler } from '../types/controllers.types';
 import TourModel from '../models/tour.model';
-import { ITour } from '../types/models.types';
-import { ParsedUrlQuery } from 'querystring';
 
+import * as factory from './factory';
 import { catchAsyncError } from '../utils/catchAsyncError';
-import { AppError } from '../utils/AppError';
 import { parseData } from '../utils/helpers';
-import { APIFeatures } from '../utils/APIFeatures';
 //
 // GET REQUESTS
 //
-export const getAllTours = catchAsyncError(async (req, res) => {
-  const toursAPIFeatures = new APIFeatures<ITour>(
-    TourModel.find(),
-    req.query as ParsedUrlQuery,
-  );
-  toursAPIFeatures.filter().sort().paginate().limitFields();
+export const getAllTours = factory.getAll(TourModel);
 
-  const tours = await toursAPIFeatures.modelQuery;
-
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: tours,
-  });
-});
-
-export const getTour = catchAsyncError(async (req, res, next) => {
-  const tour = await TourModel.findById(req.params.id).populate('reviews');
-
-  if (!tour) return next(new AppError('Tour not found', 404));
-
-  res.status(200).json({
-    status: 'success',
-    data: tour,
-  });
-});
+export const getTour = factory.getOne(TourModel, { path: 'reviews' });
 
 export const getToursStats = catchAsyncError(async (req, res, next) => {
   const tourStats = await TourModel.aggregate([
@@ -107,22 +81,8 @@ export const getMonthlyPlan = catchAsyncError(async (req, res, next) => {
 //
 // POST (PATCH) REQUESTS
 //
-export const postTour = catchAsyncError(async (req, res, next) => {
-  const data = parseData(
-    req.body,
-    'name duration maxGroupSize difficulty ratingsAverage ratingsQuantity price priceDiscount summary description imageCover images startDates',
-  );
-
-  const newTour = await TourModel.create(data);
-
-  const newTourSafeToSend = newTour.toObject();
-
-  res.status(201).json({
-    status: 'success',
-    data: newTourSafeToSend,
-  });
-});
+export const postTour = factory.post(TourModel);
 
 // #TODO updateTour
-
+export const updateTour = factory.update(TourModel);
 // #TODO deleteTour

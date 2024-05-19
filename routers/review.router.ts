@@ -1,19 +1,25 @@
 import express = require('express');
-import * as reviewController from './../controllers/review.controller';
-import * as authController from './../controllers/auth.controller';
+import * as reviewController from '../controllers/review.controller';
+import * as authController from '../controllers/auth.controller';
 
-const reviewRouter = express.Router();
+const reviewRouter = express.Router({ mergeParams: true });
 
 reviewRouter
   .route('/')
   .get(reviewController.getReviews)
-  .post(reviewController.postReview);
+  .post(
+    authController.protectRoute,
+    authController.provideRoles('user'),
+    reviewController.postReview,
+  );
 reviewRouter
   .route('/:id')
   .get(reviewController.getReview)
-  .patch(reviewController.updateReview)
+  .patch(authController.protectRoute, reviewController.updateReview)
   .delete(
     authController.protectRoute,
     authController.provideRoles('lead-guide', 'admin'),
     reviewController.deleteReview,
   );
+
+export default reviewRouter;

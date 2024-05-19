@@ -28,11 +28,10 @@ const ReviewSchema = new mongoose.Schema<IReview>({
   },
 });
 
-
 ReviewSchema.pre(
   /^find/,
   function (this: Query<IReview[] | IReview, IReview>, next) {
-    this.populate({ path: 'user', select: '-__v -passwordChangedAt' })
+    this.populate({ path: 'user', select: 'name email' });
 
     next();
   },

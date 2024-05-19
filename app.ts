@@ -10,6 +10,7 @@ import hpp = require('hpp');
 import sanitize = require('express-mongo-sanitize');
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import reviewRouter from './routers/review.router';
 
 const limiter = rateLimit({
   limit: 100,
@@ -42,6 +43,7 @@ app.use('/api', limiter);
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // unknown route
 app.use('*', (req, res, next) => {

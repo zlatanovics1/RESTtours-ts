@@ -1,11 +1,6 @@
-import UserModel from '../models/user.model';
-import { catchAsyncError } from '../utils/catchAsyncError';
+import User from '../models/user.model';
+import * as factory from './factory';
 
-export const getUsers = catchAsyncError(async (req, res, next) => {
-  const users = await UserModel.find();
+export const getUsers = factory.getAll(User);
 
-  res.status(200).json({
-    status: 'success',
-    data: users,
-  });
-});
+export const getUser = factory.getOne(User);
