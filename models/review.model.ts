@@ -50,7 +50,6 @@ ReviewSchema.statics.updateTourStats = async function (
     ratingsAverage: stats?.[0]?.avgRatings || 4.5,
     ratingsQuantity: stats?.[0]?.numRatings || 0,
   });
-  console.log(stats);
 };
 
 ReviewSchema.post('save', function () {
@@ -78,7 +77,7 @@ ReviewSchema.post(/^findOneAnd/, function (this: Query<IReview, IReview>) {
 ReviewSchema.pre(
   /^find/,
   function (this: Query<IReview[] | IReview, IReview>, next) {
-    this.populate({ path: 'user', select: 'name email' });
+    this.populate({ path: 'user', select: 'name email _id' });
 
     next();
   },

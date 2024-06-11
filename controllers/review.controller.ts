@@ -21,6 +21,15 @@ export const postReview = catchAsyncError(async (req, res, next) => {
   });
 });
 
+export const canUpdate = catchAsyncError(async (req, res, next) => {
+  const review = await Review.findById(req.params.id);
+  if (!review) return next(new AppError('Invalid id', 400));
+  //@ts-ignore
+  if (review.user._id !== req.user!._id)
+    return next(new AppError("Can not update other user's review", 401));
+
+  next();
+});
 export const updateReview = factory.update(Review);
 
 export const deleteReview = factory.deleteOne(Review);

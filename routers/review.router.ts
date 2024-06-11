@@ -15,7 +15,12 @@ reviewRouter
 reviewRouter
   .route('/:id')
   .get(reviewController.getReview)
-  .patch(authController.protectRoute, reviewController.updateReview)
+  .patch(
+    authController.protectRoute,
+    authController.provideRoles('user', 'admin'),
+    reviewController.canUpdate,
+    reviewController.updateReview,
+  )
   .delete(
     authController.protectRoute,
     authController.provideRoles('lead-guide', 'admin'),
