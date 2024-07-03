@@ -56,7 +56,7 @@ UserSchema.pre('save', async function (next) {
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
-  // 1 sec before in order to set token expiresAt later than passwordChangedAt
+  // 1 sec before in order to set token issuedAt later than passwordChangedAt
   this.passwordChangedAt = new Date(Date.now() - 1000);
 
   next();
